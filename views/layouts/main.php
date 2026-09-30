@@ -33,7 +33,7 @@ $perfilLabels = [
 
 $nomeArr = explode(' ', $user['nome'] ?? 'U');
 $iniciais = strtoupper(substr($nomeArr[0],0,1) . (isset($nomeArr[1]) ? substr($nomeArr[1],0,1) : ''));
-$urlAtual = trim($_GET['url'] ?? '', '/');
+$urlAtual = Router::getUrl();
 
 function nav($url, $icon, $label, $active = false) {
     $a = $active ? ' active' : '';

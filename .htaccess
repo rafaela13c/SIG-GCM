@@ -1,23 +1,30 @@
-Options -Indexes
-RewriteEngine On
+# ============================================================
+# SIG-GCM — Regras de Reescrita de URLs (OpenLiteSpeed / Apache)
+# ============================================================
 
-# Redirecionar para HTTPS se disponível
-# RewriteCond %{HTTPS} off
-# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+<IfModule mod_rewrite.c>
+    RewriteEngine On
 
-# Negar acesso direto a pastas sensíveis
-RewriteRule ^config/ - [F,L]
-RewriteRule ^core/ - [F,L]
-RewriteRule ^migrations/ - [F,L]
-RewriteRule ^models/ - [F,L]
-RewriteRule ^controllers/ - [F,L]
-RewriteRule ^views/ - [F,L]
+    # Descomente para forçar HTTPS se houver certificado SSL configurado
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# Permitir acesso a assets e uploads
-RewriteRule ^assets/ - [L]
-RewriteRule ^uploads/ - [L]
+    # 1. Bloquear acesso direto a diretórios de código e pastas protegidas
+    RewriteRule ^(\.git|config|core|database|migrations|models|controllers|views)(/|$) - [F,L,NC]
 
-# Tudo passa pelo index.php
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+    # 2. Bloquear arquivos de configuração sensíveis e dumps de banco de dados
+    RewriteRule \.(sql|env|log|example|git|md|bak|backup)$ - [F,L,NC]
+
+    # 3. Não reescrever requisição que já aponta para index.php
+    RewriteRule ^index\.php$ - [L]
+
+    # 4. Servir arquivos e diretórios estáticos diretamente (assets, uploads, css, js, imagens)
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # 5. Front Controller Universal:
+    # Encaminha para index.php compatível tanto com o padrão mod_rewrite clássico
+    # quanto com o roteador nativo por REQUEST_URI do OpenLiteSpeed
+    RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+</IfModule>

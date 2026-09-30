@@ -40,6 +40,11 @@ class Auth {
     // =========================================
 
     public static function attempt(string $username, string $password): array {
+        // Verificar se o banco de dados está acessível
+        if (!Database::isConnected()) {
+            return ['success' => false, 'message' => 'Erro: Não foi possível conectar ao banco de dados. Configure as credenciais em config/database.php.'];
+        }
+
         // Verificar bloqueio por tentativas
         $lockKey = 'login_attempts_' . md5($username);
         if (isset($_SESSION[$lockKey])) {
